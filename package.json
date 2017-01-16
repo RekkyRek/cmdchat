@@ -4,6 +4,7 @@
   "description": "An encrypted chat from the command line.",
   "main": "client.js",
   "dependencies": {
+    "colors": "^1.1.2",
     "socket.io-client": "^1.7.2"
   },
   "devDependencies": {},

@@ -1,4 +1,4 @@
-var rc = require('../rcrypt.js');
+var rc = require('./rcrypt/crypt.js');
 
 var args = [];
 process.argv.forEach(function (val, index, array) {
@@ -28,14 +28,26 @@ if(shouldrun) {
 
 function handleConnect(client) {
   console.log('connected');
+
   client.on('login', function(data){
-    users.push([data[0], data[1]]);
+    users.push([data[0], data[1], client.id]);
     client.emit('getkey', scrypt);
+    client.emit('getmessages', messages);
+    io.emit('userjoin', [data[0], data[1], client.id]);
   });
+
   client.on('message', function(data){
-    var d = new Date(hours, minutes, seconds);
-    messages.push([data[0], d, data[1]]);
-    console.log([data[0], d, data[1]]);
+    messages.push([data[0], new Date(), data[1]]);
+    io.emit('message', [data[0], new Date(), data[1]]);
+    console.log([data[0], new Date(), data[1]]);
   });
-  client.on('disconnect', function(){console.log('disconnected');});
+
+  client.on('disconnect', function(){
+    for (var i = 0; i < users.length; i++) {
+      if(users[i][2] == client.id) {
+        io.emit('userleft', users[i]);
+        console.log(`${users[i][0]} disconnected`);
+      }
+    }
+  });
 }

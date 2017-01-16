@@ -1,4 +1,5 @@
-var rc = require('../rcrypt.js');
+var rc = require('./rcrypt/crypt.js');
+var colors = require('colors');
 
 var args = [];
 process.argv.forEach(function (val, index, array) {
@@ -22,21 +23,50 @@ if(shouldrun) {
   socket.on('connect', function(){console.log(`Connected to ${args[2]}`); socket.emit('login',[args[3], uid])});
   socket.on('event', function(data){});
   socket.on('disconnect', function(){});
-  socket.on('getkey', function(key){scrypt = key; console.log(key)});
+  socket.on('getkey', function(key){scrypt=key});
+  socket.on('message', messageIn);
+  socket.on('getmessages', allMessageIn);
+  socket.on('userleft', (user)=>{console.warn(colors.yellow(`${user[0]} has disconnected.`))});
+  socket.on('userjoin', (user)=>{console.warn(colors.green(`${user[0]} has joined.`))});
 }
 
 process.stdin.on('data', function (text) {
   text = text.toString();
   if (text === '/quit\n') {
-    //console.log('meme')
-  } else if(text.length < 2048 && scrypt != "") {
+    io.disconnect();
+    process.exit();
+  } else if(text.length < 2048 && text.length > 2 && scrypt != "") {
     var enc = rc.encrypt(text, scrypt);
-    socket.emit('message', [args[3], enc]);
-  } else if(text.length > 2048 && scrypt != "") {
+    socket.emit('message', [args[3], enc[0]]);
+    console.log(' ');
+  } else if(text.length > 2048 && text.length > 2 && scrypt != "") {
     text = text.substring(0, 2048);
     var enc = rc.encrypt(text, scrypt);
-    socket.emit('message', [args[3], enc]);
+    socket.emit('message', [args[3], enc[0]]);
+    console.log(' ');
+  } else if(scrypt == ""){
+    console.log('No encryption key gotten from server. Please try to reconnect.');
+  } else if(text.length <= 2){
+
   } else {
-    console.log('something went wrong. try again later.');
+    console.log('Something went wrong. Try again later.')
   }
 });
+
+function messageIn(data, isall) {
+  if(data[0] != args[3]) {
+    var msgdec = rc.decrypt(data[2], scrypt);
+    var d = new Date(data[1]);
+    console.log(`<${("0" + (d.getHours() + 1)).slice(-2)}:${("0" + (d.getMinutes() + 1)).slice(-2)}:${("0" + (d.getSeconds() + 1)).slice(-2)}> `+`"${data[0]}"`.bold+`: ${msgdec}`);
+  } else if (isall) {
+    var msgdec = rc.decrypt(data[2], scrypt);
+    var d = new Date(data[1]);
+    console.log(`<${("0" + (d.getHours() + 1)).slice(-2)}:${("0" + (d.getMinutes() + 1)).slice(-2)}:${("0" + (d.getSeconds() + 1)).slice(-2)}> `+`"${data[0]}"`.bold+`: ${msgdec}`);
+  }
+}
+
+function allMessageIn(data) {
+  for (var i = 0; i < data.length; i++) {
+    messageIn(data[i], true);
+  }
+}
