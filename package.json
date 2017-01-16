@@ -1,0 +1,32 @@
+{
+  "name": "cmdchat",
+  "version": "1.0.0",
+  "description": "An encrypted chat from the command line.",
+  "main": "client.js",
+  "dependencies": {
+    "socket.io-client": "^1.7.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RekkyRek/cmdchat.git"
+  },
+  "keywords": [
+    "Chat",
+    "SocketIO",
+    "Base64",
+    "CMD",
+    "Command",
+    "Line"
+  ],
+  "author": "RekkyRek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RekkyRek/cmdchat/issues"
+  },
+  "homepage": "https://github.com/RekkyRek/cmdchat#readme"
+}
